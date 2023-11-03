@@ -79,14 +79,10 @@ class Account(ABC):
 
 
 class SavingsAccount(Account):
-    def __init__(self, name, email, address, interest_rate):
+    def __init__(self, name, email, address):
         super().__init__(name, email, address, "Savings")
-        self.interest_rate = interest_rate
+        
 
-    def apply_interest(self):
-        interest = self.balance * (self.interest_rate / 100)
-        self.deposit(interest)
-        print("\n--> Interest is applied!")
 
     def show_info(self):
         print(f"Infos of {self.accountType} account of {self.name}:\n")
@@ -111,8 +107,8 @@ while True:
             address = input("Address:")
             a = input("Savings Account or Current Account (sv/cu): ")
             if a == "sv":
-                ir = float(input("Interest rate:"))
-                currentUser = SavingsAccount(name, email, address, ir)
+               
+                currentUser = SavingsAccount(name, email, address)
             # Additional logic for CurrentAccount if needed...
         else:
             no = int(input("Account Number:"))
