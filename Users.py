@@ -14,8 +14,8 @@ class Account(ABC):
         self.address = address
         self.account_type = account_type
         self.balance = 0
-        self.account_no = random.randint(1000, 9999)  # Generating a random 4-digit account number
-        self.loans_taken = 0  # Number of loans taken by the user
+        self.account_no = random.randint(1000, 9999)  
+        self.loans_taken = 0  
         Account.accounts.append(self)
         Account.total_balance += self.balance
 
@@ -117,7 +117,6 @@ class CurrentAccount(Account):
         print(f"\tCurrent Balance: ${self.balance}\n")
 
 class Admin:
-    @staticmethod
     def create_account(name, email, address, account_type, interest_rate=None, overdraft_limit=None):
         if account_type == "savings":
             return SavingsAccount(name, email, address, interest_rate)
@@ -126,7 +125,6 @@ class Admin:
         else:
             print("Invalid account type. Please choose 'savings' or 'current'.")
 
-    @staticmethod
     def delete_account(account):
         if account in Account.accounts:
             Account.accounts.remove(account)
@@ -135,21 +133,17 @@ class Admin:
         else:
             print("\n--> Account not found.")
 
-    @staticmethod
     def view_all_accounts():
         print("\n--> All User Accounts:")
         for account in Account.accounts:
             print(f"Account No: {account.account_no}, Name: {account.name}, Balance: ${account.balance}")
 
-    @staticmethod
     def check_total_balance():
         print(f"\n--> Total Available Balance in the Bank: ${Account.total_balance}")
 
-    @staticmethod
     def check_total_loans():
         print(f"\n--> Total Loan Amount in the Bank: ${Account.total_loans}")
 
-    @staticmethod
     def toggle_loan_feature(enable):
         Account.loan_feature_enabled = enable
         status = "enabled" if enable else "disabled"
@@ -184,6 +178,7 @@ while True:
                 if account_type == "savings":
                     ir = float(input("Interest rate: "))
                     current_user = SavingsAccount(name, email, address, ir)
+                    
                 elif account_type == "current":
                     od_limit = float(input("Overdraft Limit: "))
                     current_user = CurrentAccount(name, email, address, od_limit)
