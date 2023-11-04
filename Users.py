@@ -117,7 +117,7 @@ class CurrentAccount(Account):
         print(f"\tCurrent Balance: ${self.balance}\n")
 
 class Admin:
-    def create_account(name, email, address, account_type, interest_rate=None, overdraft_limit=None):
+    def create_account(self,name, email, address, account_type, interest_rate=None, overdraft_limit=None):
         if account_type == "savings":
             return SavingsAccount(name, email, address, interest_rate)
         elif account_type == "current":
@@ -125,7 +125,7 @@ class Admin:
         else:
             print("Invalid account type. Please choose 'savings' or 'current'.")
 
-    def delete_account(account):
+    def delete_account(self,account):
         if account in Account.accounts:
             Account.accounts.remove(account)
             Account.total_balance -= account.balance
@@ -133,18 +133,18 @@ class Admin:
         else:
             print("\n--> Account not found.")
 
-    def view_all_accounts():
+    def view_all_accounts(self):
         print("\n--> All User Accounts:")
         for account in Account.accounts:
             print(f"Account No: {account.account_no}, Name: {account.name}, Balance: ${account.balance}")
 
-    def check_total_balance():
+    def check_total_balance(self):
         print(f"\n--> Total Available Balance in the Bank: ${Account.total_balance}")
 
-    def check_total_loans():
+    def check_total_loans(self):
         print(f"\n--> Total Loan Amount in the Bank: ${Account.total_loans}")
 
-    def toggle_loan_feature(enable):
+    def toggle_loan_feature(self,enable):
         Account.loan_feature_enabled = enable
         status = "enabled" if enable else "disabled"
         print(f"\n--> Loan feature {status} by the bank.")
@@ -156,13 +156,16 @@ current_user = None
 admin = Admin()
 
 while True:
+    
+    
     print("\n===================================")
     print("1. User Operations")
     print("2. Admin Operations")
     print("3. Exit")
     print("===================================")
-    
     choice = int(input("Choose Option: "))
+    
+    
 
     if choice == 1:  # User Operations
         if current_user is None:
@@ -178,6 +181,7 @@ while True:
                 if account_type == "savings":
                     ir = float(input("Interest rate: "))
                     current_user = SavingsAccount(name, email, address, ir)
+                    print(f"Savings Account Created  {current_user.name} Account No:{current_user.account_no}\n")
                     
                 elif account_type == "current":
                     od_limit = float(input("Overdraft Limit: "))
@@ -185,7 +189,8 @@ while True:
                 else:
                     print("Invalid account type. Please choose 'savings' or 'current'.")
                     continue
-
+        # print(f"Account Created  {current_user.name} Account No:{current_user.account_no}\n")
+            
             elif action == "L":
                 account_no = int(input("Account Number: "))
                 for account in Account.accounts:
