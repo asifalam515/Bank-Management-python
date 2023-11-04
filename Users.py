@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import random
 
 class Account(ABC):
-    # Class variables to track accounts, transactions, total balance, and total loans
+  
     accounts = []
     transactions = []
     total_balance = 0
@@ -11,7 +11,7 @@ class Account(ABC):
     isBankrupt=False
 
     def __init__(self, name, email, address, account_type):
-        # Initialize instance variables
+        
         self.name = name
         self.email = email
         self.address = address
@@ -19,7 +19,6 @@ class Account(ABC):
         self.balance = 0
         self.account_no = random.randint(1000, 9999)
         self.loans_taken = 0
-        # Add the current account to the list of accounts
         Account.accounts.append(self)
         Account.total_balance += self.balance
 
@@ -94,7 +93,7 @@ class SavingsAccount(Account):
             else:
                 print("\n--> Invalid withdrawal amount or insufficient funds.")
         else:
-            print("\n--> The bank is bankrupt. Withdrawals are not allowed.")
+            print("\n--> The bank is bankrupt.")
     def show_info(self):
         print(f"\nInfos of {self.account_type} account of {self.name}:\n")
         print(f"\tAccount Type: {self.account_type}")
@@ -205,6 +204,7 @@ while True:
                 elif account_type == "current":
                     od_limit = float(input("Overdraft Limit: "))
                     current_user = CurrentAccount(name, email, address, od_limit)
+                    print(f"Current Account Created  {current_user.name} Account No:{current_user.account_no}\n")
                 else:
                     print("Invalid account type. Please choose 'savings' or 'current'.")
                     continue
@@ -345,7 +345,7 @@ while True:
             else:
                 print("Wrong admin password/UserName")
     elif choice == 3:
-        print("Exiting the program. Goodbye!")
+        print("Exiting the program. ")
         break
 
     else:
