@@ -2,20 +2,24 @@ from abc import ABC, abstractmethod
 import random
 
 class Account(ABC):
+    # Class variables to track accounts, transactions, total balance, and total loans
     accounts = []
     transactions = []
     total_balance = 0
     total_loans = 0
     loan_feature_enabled = True
+    isBankrupt=False
 
     def __init__(self, name, email, address, account_type):
+        # Initialize instance variables
         self.name = name
         self.email = email
         self.address = address
         self.account_type = account_type
         self.balance = 0
-        self.account_no = random.randint(1000, 9999)  
-        self.loans_taken = 0  
+        self.account_no = random.randint(1000, 9999)
+        self.loans_taken = 0
+        # Add the current account to the list of accounts
         Account.accounts.append(self)
         Account.total_balance += self.balance
 
@@ -82,13 +86,15 @@ class SavingsAccount(Account):
         print("\n--> Interest applied!")
 
     def withdraw(self, amount):
-        if amount > 0 and (self.balance - amount) >= 0:
-            self.balance -= amount
-            self.transactions.append(f"Withdrew ${amount}. New balance: ${self.balance}")
-            print(f"\n--> Withdrew ${amount}. New balance: ${self.balance}")
+        if  Account.isBankrupt==False:  # Check if the bank is not bankrupt
+            if amount > 0 and (self.balance - amount) >= 0:
+                self.balance -= amount
+                self.transactions.append(f"Withdrew ${amount}. New balance: ${self.balance}")
+                print(f"\n--> Withdrew ${amount}. New balance: ${self.balance}")
+            else:
+                print("\n--> Invalid withdrawal amount or insufficient funds.")
         else:
-            print("\n--> Invalid withdrawal amount or insufficient funds.")
-
+            print("\n--> The bank is bankrupt. Withdrawals are not allowed.")
     def show_info(self):
         print(f"\nInfos of {self.account_type} account of {self.name}:\n")
         print(f"\tAccount Type: {self.account_type}")
@@ -102,12 +108,15 @@ class CurrentAccount(Account):
         self.overdraft_limit = overdraft_limit
 
     def withdraw(self, amount):
-        if amount > 0 and (self.balance - amount) >= -self.overdraft_limit:
-            self.balance -= amount
-            self.transactions.append(f"Withdrew ${amount}. New balance: ${self.balance}")
-            print(f"\n--> Withdrew ${amount}. New balance: ${self.balance}")
+        if not Account.isBankrupt:  # Check if the bank is not bankrupt
+            if amount > 0 and (self.balance - amount) >= 0:
+                self.balance -= amount
+                self.transactions.append(f"Withdrew ${amount}. New balance: ${self.balance}")
+                print(f"\n--> Withdrew ${amount}. New balance: ${self.balance}")
+            else:
+                print("\n--> Invalid withdrawal amount or overdraft limit reached")
         else:
-            print("\n--> Invalid withdrawal amount or overdraft limit reached")
+            print("\n--> The bank is bankrupt. Withdrawals are not allowed.")
 
     def show_info(self):
         print(f"\nInfos of {self.account_type} account of {self.name}:\n")
@@ -117,7 +126,7 @@ class CurrentAccount(Account):
         print(f"\tCurrent Balance: ${self.balance}\n")
 
 class Admin:
-    def create_account(self,name, email, address, account_type, interest_rate=None, overdraft_limit=None):
+    def create_account(self, name, email, address, account_type, interest_rate=None, overdraft_limit=None):
         if account_type == "savings":
             return SavingsAccount(name, email, address, interest_rate)
         elif account_type == "current":
@@ -125,7 +134,7 @@ class Admin:
         else:
             print("Invalid account type. Please choose 'savings' or 'current'.")
 
-    def delete_account(self,account):
+    def delete_account(self, account):
         if account in Account.accounts:
             Account.accounts.remove(account)
             Account.total_balance -= account.balance
@@ -144,28 +153,38 @@ class Admin:
     def check_total_loans(self):
         print(f"\n--> Total Loan Amount in the Bank: ${Account.total_loans}")
 
-    def toggle_loan_feature(self,enable):
+    def toggle_loan_feature(self, enable):
         Account.loan_feature_enabled = enable
         status = "enabled" if enable else "disabled"
         print(f"\n--> Loan feature {status} by the bank.")
+        
+    def toggle_bankruptcy(self, is_bankrupt):
+        Account.isBankrupt = is_bankrupt
+        status = "bankrupt" if is_bankrupt else "solvent"
+        print(f"\n--> The bank is now {status}.")
 
+class AdminAccount:
+    def __init__(self, name, email, address):
+        self.name = name
+        self.email = email
+        self.address = address
+        self.account_type = "admin"
+        self.account_no = random.randint(1000, 9999)
 
-# Main program
+# Main Program
 
 current_user = None
+admin_user = None
+
 admin = Admin()
 
 while True:
-    
-    
     print("\n===================================")
     print("1. User Operations")
     print("2. Admin Operations")
     print("3. Exit")
     print("===================================")
     choice = int(input("Choose Option: "))
-    
-    
 
     if choice == 1:  # User Operations
         if current_user is None:
@@ -182,15 +201,14 @@ while True:
                     ir = float(input("Interest rate: "))
                     current_user = SavingsAccount(name, email, address, ir)
                     print(f"Savings Account Created  {current_user.name} Account No:{current_user.account_no}\n")
-                    
+
                 elif account_type == "current":
                     od_limit = float(input("Overdraft Limit: "))
                     current_user = CurrentAccount(name, email, address, od_limit)
                 else:
                     print("Invalid account type. Please choose 'savings' or 'current'.")
                     continue
-        # print(f"Account Created  {current_user.name} Account No:{current_user.account_no}\n")
-            
+
             elif action == "L":
                 account_no = int(input("Account Number: "))
                 for account in Account.accounts:
@@ -248,61 +266,84 @@ while True:
                 print("Invalid Option")
 
     elif choice == 2:  # Admin Operations
-        print("\n1. Create Account")
-        print("2. Delete Account")
-        print("3. View All Accounts")
-        print("4. Check Total Balance")
-        print("5. Check Total Loans")
-        print("6. Toggle Loan Feature")
-        print("7. Back to Main Menu")
+        if admin_user is None:
+            print("No admin Logged In.Log in now....")
+            # admin_action = input("Log in as Admin (L)")
+            # if admin_action == "L":
+            user_name = input("User Name: ")
+            password = int(input("Admin password: "))
+            # else:
+            #     print("Invalid action")
+                # continue
 
-        admin_option = int(input("Choose Admin Option: "))
+            if user_name == "admin" and password == 123:
+                print("\n1. Create Account")
+                print("2. Delete Account")
+                print("3. View All Accounts")
+                print("4. Check Total Balance")
+                print("5. Check Total Loans")
+                print("6. Toggle Loan Feature")
+                print("7. Bank Status")
+                print("8. Back to Main Menu")
 
-        if admin_option == 1:
-            name = input("Name: ")
-            email = input("Email: ")
-            address = input("Address: ")
-            account_type = input("Account Type (savings/current): ")
+                admin_option = int(input("Choose Admin Option: "))
 
-            if account_type == "savings":
-                ir = float(input("Interest rate: "))
-                admin.create_account(name, email, address, account_type, interest_rate=ir)
-            elif account_type == "current":
-                od_limit = float(input("Overdraft Limit: "))
-                admin.create_account(name, email, address, account_type, overdraft_limit=od_limit)
+                if admin_option == 1:
+                    name = input("Name: ")
+                    email = input("Email: ")
+                    address = input("Address: ")
+                    account_type = input("Account Type (savings/current): ")
+
+                    if account_type == "savings":
+                        ir = float(input("Interest rate: "))
+                        created_account = admin.create_account(name, email, address, account_type, interest_rate=ir)
+                    elif account_type == "current":
+                        od_limit = float(input("Overdraft Limit: "))
+                        created_account = admin.create_account(name, email, address, account_type, overdraft_limit=od_limit)
+                    else:
+                        print("Invalid account type. Please choose 'savings' or 'current'.")
+                        continue
+
+                    if created_account:
+                        print(f"Account Created!Name {created_account.name} No: {created_account.account_no}")
+                    else:
+                        print("Failed to create the account.")
+
+
+                elif admin_option == 2:
+                    account_no = int(input("Enter account number to delete: "))
+                    account_to_delete = None
+                    for account in Account.accounts:
+                        if account.account_no == account_no:
+                            account_to_delete = account
+                            break
+                    admin.delete_account(account_to_delete)
+
+                elif admin_option == 3:
+                    admin.view_all_accounts()
+
+                elif admin_option == 4:
+                    admin.check_total_balance()
+
+                elif admin_option == 5:
+                    admin.check_total_loans()
+
+                elif admin_option == 6:
+                    enable_loan = input("Enable or disable loan feature? (enable/disable): ").lower()
+                    if enable_loan == "enable":
+                        admin.toggle_loan_feature(True)
+                    elif enable_loan == "disable":
+                        admin.toggle_loan_feature(False)
+                    else:
+                        print("Invalid option. Please enter 'enable' or 'disable'.")
+                elif admin_option==7:
+                    bank_status = input("Bank Status (bankrupt/solvent): ").lower()
+                    if(bank_status=="bankrupt"):
+                        admin.toggle_bankruptcy(True)
+                elif admin_option == 8:
+                    continue
             else:
-                print("Invalid account type. Please choose 'savings' or 'current'.")
-
-        elif admin_option == 2:
-            account_no = int(input("Enter account number to delete: "))
-            account_to_delete = None
-            for account in Account.accounts:
-                if account.account_no == account_no:
-                    account_to_delete = account
-                    break
-            admin.delete_account(account_to_delete)
-
-        elif admin_option == 3:
-            admin.view_all_accounts()
-
-        elif admin_option == 4:
-            admin.check_total_balance()
-
-        elif admin_option == 5:
-            admin.check_total_loans()
-
-        elif admin_option == 6:
-            enable_loan = input("Enable or disable loan feature? (enable/disable): ").lower()
-            if enable_loan == "enable":
-                admin.toggle_loan_feature(True)
-            elif enable_loan == "disable":
-                admin.toggle_loan_feature(False)
-            else:
-                print("Invalid option. Please enter 'enable' or 'disable'.")
-
-        elif admin_option == 7:
-            continue
-
+                print("Wrong admin password/UserName")
     elif choice == 3:
         print("Exiting the program. Goodbye!")
         break
